@@ -1,17 +1,17 @@
 {
     "gosu": {
         "arch": "amd64",
-        "digest": "fd7257c2736164d02832dbf72e2c1ed9d875bf3e32f0988520796bc503330129",
+        "digest": "3e6fc37ca073b10a73a804d39c2f0c028947a1a596382a4f8ebe43dfbaa3a25e",
         "distro": "debian-10",
         "type": "NAMI",
-        "version": "1.13.0-0"
+        "version": "1.14.0-0"
     },
     "mongodb": {
         "arch": "amd64",
-        "digest": "ae0d2822b9f5a5786515d7fc7ab875e112f95147299fd6cc01d1d0dafd5fbbbc",
+        "digest": "67756c58b294913301c9b40c742054d9cf96798237fcc4c5c6bf14fbb1fa787c",
         "distro": "debian-10",
         "type": "NAMI",
-        "version": "4.2.14-0"
+        "version": "4.2.17-0"
     },
     "render-template": {
         "arch": "amd64",
@@ -29,9 +29,9 @@
     },
     "yq": {
         "arch": "amd64",
-        "digest": "c88c76a7b5214407821771e5fc340f0320d5ded19eada938629603a982b8b640",
+        "digest": "3b1ddec77c3ead170719fd8a69411be57e181fc58315da214cb6b562803f470f",
         "distro": "debian-10",
         "type": "NAMI",
-        "version": "3.4.1-0"
+        "version": "4.13.5-0"
     }
 }

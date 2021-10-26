@@ -48,10 +48,10 @@ Non-root container images add an extra layer of security and are generally recom
 Learn more about the Bitnami tagging policy and the difference between rolling tags and immutable tags [in our documentation page](https://docs.bitnami.com/tutorials/understand-rolling-tags-containers/).
 
 
-* [`4.4`, `4.4-debian-10`, `4.4.6`, `4.4.6-debian-10-r28`, `latest` (4.4/debian-10/Dockerfile)](https://github.com/bitnami/bitnami-docker-mongodb/blob/4.4.6-debian-10-r28/4.4/debian-10/Dockerfile)
-* [`4.2`, `4.2-debian-10`, `4.2.14`, `4.2.14-debian-10-r40` (4.2/debian-10/Dockerfile)](https://github.com/bitnami/bitnami-docker-mongodb/blob/4.2.14-debian-10-r40/4.2/debian-10/Dockerfile)
-* [`4.0`, `4.0-debian-9`, `4.0.25`, `4.0.25-debian-9-r12` (4.0/debian-9/Dockerfile)](https://github.com/bitnami/bitnami-docker-mongodb/blob/4.0.25-debian-9-r12/4.0/debian-9/Dockerfile)
-* [`3.6`, `3.6-debian-9`, `3.6.23`, `3.6.23-debian-9-r86` (3.6/debian-9/Dockerfile)](https://github.com/bitnami/bitnami-docker-mongodb/blob/3.6.23-debian-9-r86/3.6/debian-9/Dockerfile)
+* [`5.0`, `5.0-debian-10`, `5.0.3`, `5.0.3-debian-10-r30` (5.0/debian-10/Dockerfile)](https://github.com/bitnami/bitnami-docker-mongodb/blob/5.0.3-debian-10-r30/5.0/debian-10/Dockerfile)
+* [`4.4`, `4.4-debian-10`, `4.4.10`, `4.4.10-debian-10-r12`, `latest` (4.4/debian-10/Dockerfile)](https://github.com/bitnami/bitnami-docker-mongodb/blob/4.4.10-debian-10-r12/4.4/debian-10/Dockerfile)
+* [`4.2`, `4.2-debian-10`, `4.2.17`, `4.2.17-debian-10-r31` (4.2/debian-10/Dockerfile)](https://github.com/bitnami/bitnami-docker-mongodb/blob/4.2.17-debian-10-r31/4.2/debian-10/Dockerfile)
+* [`4.0`, `4.0-debian-9`, `4.0.27`, `4.0.27-debian-9-r43` (4.0/debian-9/Dockerfile)](https://github.com/bitnami/bitnami-docker-mongodb/blob/4.0.27-debian-9-r43/4.0/debian-9/Dockerfile)
 
 Subscribe to project updates by watching the [bitnami/mongodb GitHub repo](https://github.com/bitnami/bitnami-docker-mongodb).
 
@@ -175,7 +175,7 @@ $ docker-compose up -d
 
 ## Initializing a new instance
 
-When the container is executed for the first time, it will execute the files with extensions `.sh`, and `.js` located at `/docker-entrypoint-initdb.d`.
+When the container is executed for the first time, it will execute the files with extensions `.sh`, `.js` and `.js.gz` located at `/docker-entrypoint-initdb.d`. Files with extension `.sh` and that are executable will be executed, otherwise they will be sourced. When authentication is turned on (see [below](#setting-the-root-password-on-first-run)) files with extension `.js` will be run authorized as the root user, if present, alternatively the user from `MONGODB_USERNAME` or the first user of the list in `MONGODB_EXTRA_USERNAMES`. File with extension `.js.gz` will be decompressed before run as files with extension `.js`. All relevant files at `/docker-entrypoint-initdb.d` are treated in alphabetical order.
 
 In order to have your custom files inside the docker image you can mount them as a volume.
 
@@ -224,6 +224,10 @@ services:
       - MONGODB_SYSTEM_LOG_VERBOSITY=3
   ...
 ```
+
+## Using numactl
+
+  In order to enable launching commands using numactl, set the `MONGODB_ENABLE_NUMACTL` variable to true. For more information on this, check the official [MongoDB documentation][(https://docs.mongodb.com/manual/administration/production-notes/#configuring-numa-on-linux)
 
 ## Enabling/disabling IPv6
 
@@ -293,9 +297,9 @@ services:
   ...
 ```
 
-## Setting the root password on first run
+## Setting the root user and password on first run
 
-Passing the `MONGODB_ROOT_PASSWORD` environment variable when running the image for the first time will set the password of the `root` user to the value of `MONGODB_ROOT_PASSWORD` and enabled authentication on the MongoDB&reg; server.
+Passing the `MONGODB_ROOT_PASSWORD` environment variable when running the image for the first time will set the password of `MONGODB_ROOT_USER` to the value of `MONGODB_ROOT_PASSWORD` and enable authentication on the MongoDB&reg; server. If unset, `MONGODB_ROOT_USER` defaults to `root`.
 
 ```console
 $ docker run --name mongodb \
@@ -313,33 +317,52 @@ services:
   ...
 ```
 
-The `root` user is configured to have full administrative access to the MongoDB&reg; server. When `MONGODB_ROOT_PASSWORD` is not specified the server allows unauthenticated and unrestricted access.
+The `MONGODB_ROOT_USER` user is configured to have full administrative access to the MongoDB&reg; server. When `MONGODB_ROOT_PASSWORD` is not specified the server allows unauthenticated and unrestricted access.
 
-## Creating a user and database on first run
+## Creating users and databases on first run
 
-You can create a user with restricted access to a database while starting the container for the first time. To do this, provide the `MONGODB_USERNAME`, `MONGODB_PASSWORD` and `MONGODB_DATABASE` environment variables.
+You can create users with restricted access to databases while starting the container for the first time. There are two ways to do this, for backwards compatibility reasons.
+
+- You can provide username and password information through the `MONGODB_USERNAME` and `MONGODB_PASSWORD` environment variables. To specify the database that this user will have access to, you can provide its name in `MONGODB_DATABASE`. When the value of `MONGODB_DATABASE` is empty, the user will be provided access to the default database called `test`.
+- When you need to create more than one user, you can provide the `MONGODB_EXTRA_USERNAMES`, `MONGODB_EXTRA_PASSWORDS` and `MONGODB_EXTRA_DATABASES` environment variables. In these variables, the characters `,` and `;` are used as field separators. If you do not provide database names in `MONGODB_DATABASES`, all users will be created in the default database called `test`. Otherwise, you *must* provide as many usernames, as passwords as databases through these variables, i.e. there should be as many items in all the lists that these variables represent. When the list in `MONGODB_EXTRA_DATABASES` contains an empty name, the corresponding user will be created in the default database called `test`. As the characters `,` and `;` are used as field separators, these cannot appear in the values of the usernames, passwords and databases created using these environment variables.
 
 ```console
 $ docker run --name mongodb \
-  -e MONGODB_USERNAME=my_user -e MONGODB_PASSWORD=password123 \
+  -e ALLOW_EMPTY_PASSWORD=yes \
+  -e MONGODB_USERNAME=my_user \
+  -e MONGODB_PASSWORD=password123 \
   -e MONGODB_DATABASE=my_database bitnami/mongodb:latest
 ```
 
-or by modifying the [`docker-compose.yml`](https://github.com/bitnami/bitnami-docker-mongodb/blob/master/docker-compose.yml) file present in this repository:
+you can also modify the [`docker-compose.yml`](https://github.com/bitnami/bitnami-docker-mongodb/blob/master/docker-compose.yml) file present in this repository as in the example below. This would create a user `my_user1` with access to the database `my_database1` and a user `my_user2` with access to the database `my_database2`. Note the use of two different field delimiters.
 
 ```yaml
 services:
   mongodb:
   ...
-    environment:
-      - MONGODB_USERNAME=my_user
-      - MONGODB_PASSWORD=password123
-      - MONGODB_DATABASE=my_database
+      - ALLOW_EMPTY_PASSWORD=yes
+      - MONGODB_EXTRA_USERNAMES=my_user1,my_user2
+      - MONGODB_EXTRA_PASSWORDS=password123,password321
+      - MONGODB_EXTRA_DATABASES=my_database1;my_database2
   ...
 ```
 
 **Note!**
 Creation of a user enables authentication on the MongoDB&reg; server and as a result unauthenticated access by *any* user is not permitted.
+
+## Using files instead of litterals
+
+When an environment variable ending with `_FILE` is found, and if its name without the `_FILE` suffix is recognised by this image, the value of the environment variable without the `_FILE` suffix will be read from the file path that it points at. This feature can be used to access Docker or Kubernetes secrets, for example.
+
+Provided a file at `/run/secrets/password` with the content `password123` (without a terminating line ending), the following example would create a user called `my_user` with password `password123` and with access to the database `my_database`:
+
+```console
+$ docker run --name mongodb \
+  -e ALLOW_EMPTY_PASSWORD=yes \
+  -e MONGODB_USERNAME=my_user \
+  -e MONGODB_PASSWORD_FILE=/run/secrets/password \
+  -e MONGODB_DATABASE=my_database bitnami/mongodb:latest
+```
 
 ## Setting up replication
 
@@ -352,6 +375,7 @@ A [replication](https://docs.mongodb.com/manual/replication/) cluster can easily
  - `MONGODB_INITIAL_PRIMARY_PORT_NUMBER`: MongoDB&reg; initial primary node port, as seen by other nodes. Default: **27017**
  - `MONGODB_ADVERTISED_HOSTNAME`: MongoDB&reg; advertised hostname. No defaults. It is recommended to pass this environment variable if you experience issues with ephemeral IPs. Setting this env var makes the nodes of the replica set to be configured with a hostname instead of the machine IP.
  - `MONGODB_REPLICA_SET_KEY`: MongoDB&reg; replica set key. Length should be greater than 5 characters and should not contain any special characters. Required for all nodes. No default.
+ - `MONGODB_ROOT_USER`: MongoDB&reg; root user name. Default: **root**.
  - `MONGODB_ROOT_PASSWORD`: MongoDB&reg; root password. No defaults. Only for primary node.
  - `MONGODB_INITIAL_PRIMARY_ROOT_PASSWORD`: MongoDB&reg; initial primary root password. No defaults. Only for secondaries and arbiter nodes.
 
@@ -634,7 +658,7 @@ Example corresponding settings for a secondary node `mongodb-secondary`:
 ### Connecting to the mongo daemon via SSL
 After successfully starting a cluster as specified, within the container it should be possible to connect to the mongo daemon on the primary node using:
 ```console
-/opt/bitnami/mongodb/bin/mongo -u root -p ${MONGODB_ROOT_PASSWORD} --host mongodb-primary --tls --tlsCertificateKeyFile=/certificates/mongodb-primary.pem --tlsCAFile=/certificates/mongoCA.crt
+/opt/bitnami/mongodb/bin/mongo -u ${MONGODB_ROOT_USER} -p ${MONGODB_ROOT_PASSWORD} --host mongodb-primary --tls --tlsCertificateKeyFile=/certificates/mongodb-primary.pem --tlsCAFile=/certificates/mongoCA.crt
 ```
 
 **NB**: We only support `--clusterAuthMode=keyFile` in this configuration.
@@ -772,6 +796,16 @@ $ docker-compose up mongodb
 ```
 
 # Notable Changes
+
+## 4.0.27-debian-9-r44, 4.2.17-debian-10-r31, 4.4.10-debian-10-r11, and 5.0.3-debian-10-r30
+
+- The variables `MONGODB_EXTRA_USERNAMES`, `MONGODB_EXTRA_PASSWORDS` and `MONGODB_EXTRA_DATABASES` were added to permit initialization of more than one database the first time that a container is run. `MONGODB_EXTRA_USERNAMES`, `MONGODB_EXTRA_PASSWORDS`, `MONGODB_EXTRA_DATABASES` use the characters `,` and/or `;` as field delimiters. It is still possible to use the variables from prior versions if necessary: `MONGODB_USERNAME`, `MONGODB_PASSWORD` and `MONGODB_DATABASE`.
+- When specifying extra users, an empty database name will be understood as the Mongo default database called `test`.
+- It is not possible to create extra users with an empty password, this is a Mongo limitation.
+
+## 4.4.8-debian-10-r31, and 5.0.2-debian-10-r0
+
+- From now on, "Default Write Concern" need to be set before adding new members (secondary, arbiter or hidden) to the cluster. In order to maintain the safest default configuration, `{"setDefaultRWConcern" : 1, "defaultWriteConcern" : {"w" : "majority"}}` is configured before adding new members. See https://docs.mongodb.com/manual/reference/command/setDefaultRWConcern/ and https://docs.mongodb.com/v5.0/reference/mongodb-defaults/#default-write-concern
 
 ## 3.6.14-r69, 4.0.13-r11, and 4.2.1-r12
 

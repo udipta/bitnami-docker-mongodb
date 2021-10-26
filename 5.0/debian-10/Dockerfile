@@ -12,30 +12,18 @@ RUN install_packages acl ca-certificates curl gzip libc6 libcom-err2 libcurl4 li
 RUN . /opt/bitnami/scripts/libcomponent.sh && component_unpack "yq" "4.13.5-0" --checksum 3b1ddec77c3ead170719fd8a69411be57e181fc58315da214cb6b562803f470f
 RUN . /opt/bitnami/scripts/libcomponent.sh && component_unpack "wait-for-port" "1.0.0-3" --checksum 7521d9a4f9e4e182bf32977e234026caa7b03759799868335bccb1edd8f8fd12
 RUN . /opt/bitnami/scripts/libcomponent.sh && component_unpack "render-template" "1.0.0-3" --checksum 8179ad1371c9a7d897fe3b1bf53bbe763f94edafef19acad2498dd48b3674efe
-RUN . /opt/bitnami/scripts/libcomponent.sh && component_unpack "mongodb" "4.4.10-0" --checksum e5e542bf3393266be79cc578424eb66dd97a1524adfdb85c3cbbd13e053cf588
+RUN . /opt/bitnami/scripts/libcomponent.sh && component_unpack "mongodb" "5.0.3-1" --checksum e33482da8a1eaf64aeaecfb58f9c371eb2fbd3d4731c7b67734a7ea8d3815eb4
 RUN . /opt/bitnami/scripts/libcomponent.sh && component_unpack "gosu" "1.14.0-0" --checksum 3e6fc37ca073b10a73a804d39c2f0c028947a1a596382a4f8ebe43dfbaa3a25e
 RUN chmod g+rwX /opt/bitnami
 
 COPY rootfs /
 RUN /opt/bitnami/scripts/mongodb/postunpack.sh
 ENV BITNAMI_APP_NAME="mongodb" \
-    BITNAMI_IMAGE_VERSION="4.4.10-debian-10-r12" \
+    BITNAMI_IMAGE_VERSION="5.0.3-debian-10-r30" \
     PATH="/opt/bitnami/common/bin:/opt/bitnami/mongodb/bin:$PATH"
 
 EXPOSE 27017
 
-# create user and usergroup
-# get username & password on build
-ARG username
-RUN echo "Admin Username: $username"
-
-ARG password
-RUN echo "Admin Password: $password"
-
-RUN useradd -M --system --shell /bin/bash --password $(echo $password | openssl passwd -1 -stdin) $username
-RUN usermod -aG root,sudo $username
-
-USER $username
-
+USER 1001
 ENTRYPOINT [ "/opt/bitnami/scripts/mongodb/entrypoint.sh" ]
 CMD [ "/opt/bitnami/scripts/mongodb/run.sh" ]
