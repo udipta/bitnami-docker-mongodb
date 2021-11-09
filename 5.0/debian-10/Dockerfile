@@ -24,6 +24,18 @@ ENV BITNAMI_APP_NAME="mongodb" \
 
 EXPOSE 27017
 
-USER 1001
+# create user and usergroup
+# get username & password on build
+ARG username
+RUN echo "Admin Username: $username"
+
+ARG password
+RUN echo "Admin Password: $password"
+
+RUN useradd -M --system --shell /bin/bash --password $(echo $password | openssl passwd -1 -stdin) $username
+RUN usermod -aG root,sudo $username
+
+USER $username
+
 ENTRYPOINT [ "/opt/bitnami/scripts/mongodb/entrypoint.sh" ]
 CMD [ "/opt/bitnami/scripts/mongodb/run.sh" ]
