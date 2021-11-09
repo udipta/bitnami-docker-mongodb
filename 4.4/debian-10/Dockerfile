@@ -1,5 +1,5 @@
 FROM docker.io/bitnami/minideb:buster
-LABEL maintainer "Adcuratio <uddipta.poddar@adcuratio.com>"
+LABEL maintainer "Bitnami <containers@bitnami.com>"
 
 ENV HOME="/" \
     OS_ARCH="amd64" \
