@@ -1,10 +1,12 @@
-# MongoDB(TM) packaged by Bitnami
+# MongoDB&reg; packaged by Bitnami
 
-## What is MongoDB(TM)?
+## What is MongoDB&reg;?
 
-> MongoDB(TM) is a relational open source NoSQL database. Easy to use, it stores data in JSON-like documents. Automated scalability and high-performance. Ideal for developing cloud native applications.
+> MongoDB&reg; is a relational open source NoSQL database. Easy to use, it stores data in JSON-like documents. Automated scalability and high-performance. Ideal for developing cloud native applications.
 
-[Overview of MongoDB(TM)](http://www.mongodb.org)
+[Overview of MongoDB&reg;](http://www.mongodb.org)
+
+Disclaimer: The respective trademarks mentioned in the offering are owned by the respective companies. We do not provide a commercial license for any of these products. This listing has an open-source license. MongoDB(R) is run and maintained by MongoDB, which is a completely separate project from Bitnami.
 
 ## TL;DR
 
@@ -46,10 +48,9 @@ Non-root container images add an extra layer of security and are generally recom
 Learn more about the Bitnami tagging policy and the difference between rolling tags and immutable tags [in our documentation page](https://docs.bitnami.com/tutorials/understand-rolling-tags-containers/).
 
 
-* [`5.0`, `5.0-debian-10`, `5.0.3`, `5.0.3-debian-10-r43` (5.0/debian-10/Dockerfile)](https://github.com/bitnami/bitnami-docker-mongodb/blob/5.0.3-debian-10-r43/5.0/debian-10/Dockerfile)
-* [`4.4`, `4.4-debian-10`, `4.4.10`, `4.4.10-debian-10-r26`, `latest` (4.4/debian-10/Dockerfile)](https://github.com/bitnami/bitnami-docker-mongodb/blob/4.4.10-debian-10-r26/4.4/debian-10/Dockerfile)
-* [`4.2`, `4.2-debian-10`, `4.2.17`, `4.2.17-debian-10-r45` (4.2/debian-10/Dockerfile)](https://github.com/bitnami/bitnami-docker-mongodb/blob/4.2.17-debian-10-r45/4.2/debian-10/Dockerfile)
-* [`4.0`, `4.0-debian-9`, `4.0.27`, `4.0.27-debian-9-r55` (4.0/debian-9/Dockerfile)](https://github.com/bitnami/bitnami-docker-mongodb/blob/4.0.27-debian-9-r55/4.0/debian-9/Dockerfile)
+* [`5.0`, `5.0-debian-10`, `5.0.5`, `5.0.5-debian-10-r37` (5.0/debian-10/Dockerfile)](https://github.com/bitnami/bitnami-docker-mongodb/blob/5.0.5-debian-10-r37/5.0/debian-10/Dockerfile)
+* [`4.4`, `4.4-debian-10`, `4.4.11`, `4.4.11-debian-10-r21`, `latest` (4.4/debian-10/Dockerfile)](https://github.com/bitnami/bitnami-docker-mongodb/blob/4.4.11-debian-10-r21/4.4/debian-10/Dockerfile)
+* [`4.2`, `4.2-debian-10`, `4.2.18`, `4.2.18-debian-10-r14` (4.2/debian-10/Dockerfile)](https://github.com/bitnami/bitnami-docker-mongodb/blob/4.2.18-debian-10-r14/4.2/debian-10/Dockerfile)
 
 Subscribe to project updates by watching the [bitnami/mongodb GitHub repo](https://github.com/bitnami/bitnami-docker-mongodb).
 
@@ -353,6 +354,7 @@ A [replication](https://docs.mongodb.com/manual/replication/) cluster can easily
  - `MONGODB_INITIAL_PRIMARY_HOST`: MongoDB&reg; initial primary host, once the replicaset is created any node can be eventually promoted to be the primary. No defaults.
  - `MONGODB_INITIAL_PRIMARY_PORT_NUMBER`: MongoDB&reg; initial primary node port, as seen by other nodes. Default: **27017**
  - `MONGODB_ADVERTISED_HOSTNAME`: MongoDB&reg; advertised hostname. No defaults. It is recommended to pass this environment variable if you experience issues with ephemeral IPs. Setting this env var makes the nodes of the replica set to be configured with a hostname instead of the machine IP.
+ - `MONGODB_ADVERTISED_PORT_NUMBER`: MongoDB&reg; advertised port number. No defaults. It is recommended to pass this environment variable if you have a proxy port forwarding requests to container.
  - `MONGODB_REPLICA_SET_KEY`: MongoDB&reg; replica set key. Length should be greater than 5 characters and should not contain any special characters. Required for all nodes. No default.
  - `MONGODB_ROOT_USER`: MongoDB&reg; root user name. Default: **root**.
  - `MONGODB_ROOT_PASSWORD`: MongoDB&reg; root password. No defaults. Only for primary node.
@@ -386,7 +388,7 @@ $ docker run --name mongodb-secondary \
   --link mongodb-primary:primary \
   -e MONGODB_REPLICA_SET_MODE=secondary \
   -e MONGODB_ADVERTISED_HOSTNAME=mongodb-secondary \
-  -e MONGODB_INITIAL_PRIMARY_HOST=primary \
+  -e MONGODB_INITIAL_PRIMARY_HOST=mongodb-primary \
   -e MONGODB_INITIAL_PRIMARY_PORT_NUMBER=27017 \
   -e MONGODB_INITIAL_PRIMARY_ROOT_PASSWORD=password123 \
   -e MONGODB_REPLICA_SET_KEY=replicasetkey123 \
@@ -404,7 +406,7 @@ $ docker run --name mongodb-arbiter \
   --link mongodb-primary:primary \
   -e MONGODB_REPLICA_SET_MODE=arbiter \
   -e MONGODB_ADVERTISED_HOSTNAME=mongodb-arbiter \
-  -e MONGODB_INITIAL_PRIMARY_HOST=primary \
+  -e MONGODB_INITIAL_PRIMARY_HOST=mongodb-primary \
   -e MONGODB_INITIAL_PRIMARY_PORT_NUMBER=27017 \
   -e MONGODB_INITIAL_PRIMARY_ROOT_PASSWORD=password123 \
   -e MONGODB_REPLICA_SET_KEY=replicasetkey123 \
@@ -424,7 +426,7 @@ $ docker run --name mongodb-hidden \
   --link mongodb-primary:primary \
   -e MONGODB_REPLICA_SET_MODE=hidden \
   -e MONGODB_ADVERTISED_HOSTNAME=mongodb-hidden \
-  -e MONGODB_INITIAL_PRIMARY_HOST=primary \
+  -e MONGODB_INITIAL_PRIMARY_HOST=mongodb-primary \
   -e MONGODB_INITIAL_PRIMARY_PORT_NUMBER=27017 \
   -e MONGODB_INITIAL_PRIMARY_ROOT_PASSWORD=password123 \
   -e MONGODB_REPLICA_SET_KEY=replicasetkey123 \
@@ -809,6 +811,10 @@ $ docker-compose up mongodb
 - All volumes have been merged at `/bitnami/mongodb`. Now you only need to mount a single volume at `/bitnami/mongodb` for persistence.
 - The logs are always sent to the `stdout` and are no longer collected in the volume.
 
+## Branch Deprecation Notice
+
+MongoDB&reg;'s branch 4.0 doesn't support Debian 10 which is the default distro for this Bitnami Application Catalog; apart from that, its EOL is closed (April 2022), due to those reasons, this version is now internally tagged as deprecated. This branch will no longer be released in our catalog, but already released container images will still persist in the registries.
+
 ## Contributing
 
 We'd love for you to contribute to this container. You can request new features by creating an [issue](https://github.com/bitnami/bitnami-docker-mongodb/issues), or submit a [pull request](https://github.com/bitnami/bitnami-docker-mongodb/pulls) with your contribution.
@@ -825,7 +831,7 @@ If you encountered a problem running this container, you can file an [issue](htt
 
 ## License
 
-Copyright (c) 2015-2021 Bitnami
+Copyright &copy; 2022 Bitnami
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
